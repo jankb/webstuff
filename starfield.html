@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<html>
+  <style>html,body {
+  width: 100%;
+  height: 100%;
+  margin: 0px;</style>
+<body>
+<canvas id="myCanvas" style="border:0px solid #d3d3d3;background-color:black">
+Your browser does not support the HTML5 canvas tag.</canvas>
+
+<br>
+DrawTime : <div id="time"></div>
+Number of stars : <div id="stars"></div>
+<script>
+
+
+var maxZdist = 50;
+var numOfStars = 20000;
+
+var timeField = document.getElementById("time");
+document.getElementById("stars").innerHTML = numOfStars;
+var c = document.getElementById("myCanvas");
+var ctx = c.getContext("2d");
+var centerX = c.width / 2;
+var centerY = c.height / 2;
+ 
+function getRndInteger(min, max) {
+    return Math.floor(Math.random() * (max - min + 1) ) + min;
+}
+
+function DPoint(x,y,z, speed)
+{
+ this.x = x;
+ this.y = y;
+ this.z = z;
+ this.speed = speed;
+ this.color = Math.min(255, (200 + Math.floor(this.speed * 10)));
+ this.rgb = 'rgb('+ this.color + ',' + this.color + ',' + this.color +')' ;
+}
+
+
+function movePoint(point)
+{
+    point.z = point.z - point.speed;
+}
+
+
+function drawPoint(point, context)
+{
+  if (point.z > 6)
+  {
+    return;
+  }
+  else if (point.z > 2 && point.z < 4)
+  {
+    context.strokeStyle="#1f1f1f";
+  }
+  else if (point.z > 4 && point.z < 6)
+  {
+    context.strokeStyle="#090909";
+  }
+  else
+  {
+    context.strokeStyle=point.rgb;
+  }
+  context.strokeRect(centerX+(point.x/point.z),centerY+(point.y/point.z),1,1);
+}
+
+var points = [];
+
+for (var i = 0; i <= numOfStars; i++)
+{
+  var speed = Math.random()* 0.005 + 0.01;
+  if (speed > 0.2) speed = 0.2;
+  points.push(new DPoint(getRndInteger(-1420, 1420),
+                         getRndInteger(-1240, 1240),
+                         getRndInteger(1, maxZdist),
+                         speed));
+}
+
+
+function reDrawCanvas()
+{
+  ctx.clearRect(0,0, c.width, c.height);
+  for (var i = 0; i < numOfStars; i++)
+  {
+    drawPoint(points[i], ctx);
+    
+    //movePoint(points[i]);
+    points[i].z = points[i].z - points[i].speed;
+    if (points[i].z  <= 0) points[i].z = maxZdist;
+  }
+}
+
+function resizeCanvas()
+{
+  c.width = window.innerWidth;
+  c.height = window.innerHeight;
+  centerX = c.width / 2;
+  centerY = c.height / 2;
+  reDrawCanvas();
+}
+        
+window.addEventListener('resize', resizeCanvas, false);
+resizeCanvas();
+
+var fps = 1000/40;
+var startTime = 0;
+var endTime = 0;
+var timeInMs = 0;
+window.setInterval(function() {
+  startTime = (new Date()).getTime();
+  reDrawCanvas();
+  endTime = (new Date()).getTime();
+  timeInMs = endTime - startTime;
+  fps = Math.floor(1000 / timeInMs);
+  if (fps > 25) fps = 25;
+  timeField.innerHTML = timeInMs + " ms, <br> Fps : " +  fps;
+}, fps);
+
+</script>
+</body>
+</html>
